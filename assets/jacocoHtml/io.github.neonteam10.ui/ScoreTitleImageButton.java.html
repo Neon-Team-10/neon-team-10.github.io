@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScoreTitleImageButton.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">ScoreTitleImageButton.java</span></div><h1>ScoreTitleImageButton.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
+import io.github.neonteam10.GameLogic;
+
+public class ScoreTitleImageButton extends Table {
+    private UiAssets uiAssets;
+    private GameLogic gameLogic;
+    private Stack stack;
+<span class="nc" id="L16">    public ScoreTitleImageButton(UiAssets uiAssets, GameLogic gameLogic) {</span>
+<span class="nc" id="L17">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L18">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L19">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L23">        super.act(delta);</span>
+<span class="nc bnc" id="L24" title="All 6 branches missed.">        if (stack == null &amp;&amp; uiAssets.hasSpritesheetLoaded() &amp;&amp; uiAssets.hasFontsLoaded()) {</span>
+
+<span class="nc" id="L26">            Image background = new Image(new TextureRegion(uiAssets.getSpritesheet(), 288, 128, 64, 28));</span>
+<span class="nc" id="L27">            Label.LabelStyle labelStyle = new Label.LabelStyle(uiAssets.getLargeFont(), Color.BLACK);</span>
+<span class="nc" id="L28">            Label label = new Label(&quot;Top 5&quot; , labelStyle);</span>
+<span class="nc" id="L29">            label.setAlignment(Align.center);</span>
+
+<span class="nc" id="L31">            stack = new Stack();</span>
+<span class="nc" id="L32">            stack.add(background);</span>
+<span class="nc" id="L33">            stack.add(label);</span>
+<span class="nc" id="L34">            add(stack).size(64*2.5f, 28*2.5f).pad(10);</span>
+        }
+<span class="nc" id="L36">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

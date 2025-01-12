@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">GameScreen.java</span></div><h1>GameScreen.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.utils.ScreenUtils;
+
+import io.github.neonteam10.Achievements.AchievementController;
+import io.github.neonteam10.map.GameMap;
+import io.github.neonteam10.map.GameMapInput;
+import io.github.neonteam10.ui.UiStage;
+
+/**
+ * A class representing the main gameplay screen.
+ */
+public class GameScreen extends ScreenAdapter {
+    private final AssetManager assetManager;
+    public final CursorManager cursorManager;
+    private final SpriteBatch batch;
+    private final CameraController cameraController;
+    private final GameLogic gameLogic;
+    private final UiStage uiStage;
+    private GameMap map;
+    private GameMapInput mapInput;
+    private MapRenderer mapRenderer;
+    private UniSimGame uniSimGame;
+
+<span class="fc" id="L33">    public GameScreen(UniSimGame uniSimGame, AssetManager assetManager, CursorManager cursorManager) {</span>
+<span class="fc" id="L34">        this.assetManager = assetManager;</span>
+<span class="fc" id="L35">        this.cursorManager = cursorManager;</span>
+<span class="nc" id="L36">        batch = new SpriteBatch();</span>
+<span class="nc" id="L37">        cameraController = new CameraController();</span>
+<span class="nc" id="L38">        gameLogic = new GameLogic(this);</span>
+<span class="nc" id="L39">        uiStage = new UiStage(assetManager, gameLogic);</span>
+<span class="nc" id="L40">        this.uniSimGame = uniSimGame;</span>
+
+        // Create an input multiplexer to chain together our input adapters.
+        // Add the UI stage first, then the camera controller.
+<span class="nc" id="L44">        var inputMultiplexer = new InputMultiplexer();</span>
+<span class="nc" id="L45">        inputMultiplexer.addProcessor(uiStage);</span>
+<span class="nc" id="L46">        inputMultiplexer.addProcessor(cameraController);</span>
+<span class="nc" id="L47">        Gdx.input.setInputProcessor(inputMultiplexer);</span>
+<span class="nc" id="L48">    }</span>
+
+    @Override
+    public void resize(int width, int height) {
+        // Propagate resize to other systems.
+<span class="nc" id="L53">        cameraController.setViewportDimensions(width, height);</span>
+<span class="nc" id="L54">        uiStage.getViewport().update(width, height, true);</span>
+<span class="nc" id="L55">    }</span>
+
+    @Override
+    public void render(float deltaTime) {
+        // Clear the screen with a solid color (black).
+<span class="nc" id="L60">        ScreenUtils.clear(0.0f, 0.0f, 0.0f, 1.0f);</span>
+
+        // Create map and map renderer if first run.
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (map == null) {</span>
+<span class="nc" id="L64">            initializeMap();</span>
+        }
+
+        // Set cursor based on camera behavior.
+<span class="nc" id="L68">        updateCursorState();</span>
+
+        // Update camera, game logic, and UI.
+<span class="nc" id="L71">        cameraController.update(deltaTime);</span>
+<span class="nc" id="L72">        gameLogic.update(deltaTime);</span>
+<span class="nc" id="L73">        uiStage.act(deltaTime);</span>
+
+        // Render the map.
+<span class="nc" id="L76">        mapRenderer.setView(cameraController.getCamera());</span>
+<span class="nc" id="L77">        mapRenderer.render();</span>
+
+        // Render the building currently being placed.
+<span class="nc" id="L80">        renderBuildingPlacement();</span>
+
+        // Render the UI last.
+<span class="nc" id="L83">        uiStage.update();</span>
+<span class="nc" id="L84">        uiStage.draw();</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Initializes the map and map renderer and sets up the camera position.
+     */
+    private void initializeMap() {
+        try {
+<span class="nc" id="L92">            var tiledMap = assetManager.get(&quot;maps/map.tmx&quot;, TiledMap.class);</span>
+<span class="nc" id="L93">            map = new GameMap(tiledMap);</span>
+<span class="nc" id="L94">            AchievementController achievementController = new AchievementController(gameLogic, map, uiStage);</span>
+<span class="nc" id="L95">            uiStage.setAchievementController(achievementController);</span>
+<span class="nc" id="L96">            gameLogic.setMap(map);</span>
+<span class="nc" id="L97">            gameLogic.setAchievementController(achievementController);</span>
+
+<span class="nc" id="L99">            mapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch);</span>
+
+            // Center the camera on the map.
+<span class="nc" id="L102">            cameraController.getCamera().position.set(map.getWidthPx() / 2.0f, map.getHeightPx() / 2.0f, 0.0f);</span>
+<span class="nc" id="L103">            cameraController.setMapDimensions(map.getWidthPx(), map.getHeightPx());</span>
+
+<span class="nc" id="L105">            gameLogic.setMap(map);</span>
+
+            // Add input handler for map.
+<span class="nc" id="L108">            mapInput = new GameMapInput(map, gameLogic, cameraController);</span>
+<span class="nc" id="L109">            ((InputMultiplexer) Gdx.input.getInputProcessor()).addProcessor(mapInput);</span>
+<span class="nc" id="L110">        } catch (Exception e) {</span>
+<span class="nc" id="L111">            Gdx.app.error(&quot;GameScreen&quot;, &quot;Failed to initialize the map renderer: &quot; + e.getMessage());</span>
+<span class="nc" id="L112">        }</span>
+<span class="nc" id="L113">    }</span>
+
+    /**
+     * Updates the cursor state based on camera actions.
+     */
+    private void updateCursorState() {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (cameraController.isZoomingIn()) {</span>
+<span class="nc" id="L120">            cursorManager.setCursor(GameCursor.ZOOM_IN);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        } else if (cameraController.isZoomingOut()) {</span>
+<span class="nc" id="L122">            cursorManager.setCursor(GameCursor.ZOOM_OUT);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        } else if (cameraController.isPanning()) {</span>
+<span class="nc" id="L124">            cursorManager.setCursor(GameCursor.HAND_OPEN);</span>
+        } else {
+<span class="nc" id="L126">            cursorManager.setCursor(GameCursor.POINTER);</span>
+        }
+<span class="nc" id="L128">    }</span>
+
+    /**
+     * Renders a building on the mouse cursor if a building is currently being placed.
+     */
+    private void renderBuildingPlacement() {
+<span class="nc" id="L134">        var prefab = gameLogic.getSelectedPrefab();</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (prefab == null) {</span>
+            // Building not being placed.
+<span class="nc" id="L137">            return;</span>
+        }
+
+<span class="nc" id="L140">        int placementX = mapInput.getPlacementTileX();</span>
+<span class="nc" id="L141">        int placementY = mapInput.getPlacementTileY();</span>
+
+        // Select texture based on whether this placement is valid.
+<span class="nc" id="L144">        boolean canPlace = map.canPlaceBuilding(prefab, placementX, placementY);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        var texture = canPlace ? prefab.getTransparentTexture() : prefab.getRedTexture();</span>
+
+        // Render texture.
+<span class="nc" id="L148">        batch.begin();</span>
+<span class="nc" id="L149">        batch.draw(texture, placementX * map.getTileWidthPx(), placementY * map.getTileHeightPx());</span>
+<span class="nc" id="L150">        batch.end();</span>
+<span class="nc" id="L151">    }</span>
+
+    @Override
+    public void dispose() {
+<span class="nc" id="L155">        batch.dispose();</span>
+<span class="nc" id="L156">        uiStage.dispose();</span>
+<span class="nc" id="L157">    }</span>
+
+    public void restart() {
+<span class="nc" id="L160">        uniSimGame.create();</span>
+<span class="nc" id="L161">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

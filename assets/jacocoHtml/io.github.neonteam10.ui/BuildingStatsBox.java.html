@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuildingStatsBox.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">BuildingStatsBox.java</span></div><h1>BuildingStatsBox.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
+
+import io.github.neonteam10.GameLogic;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A class which represents the building counter UI element.
+ */
+public class BuildingStatsBox extends Table {
+    private final UiAssets uiAssets;
+    private final GameLogic gameLogic;
+    private final List&lt;Label&gt; labels;
+    private Image boxImage;
+
+<span class="nc" id="L24">    public BuildingStatsBox(UiAssets uiAssets, GameLogic gameLogic) {</span>
+<span class="nc" id="L25">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L26">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L27">        labels = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L28">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L32">        super.act(delta);</span>
+
+        // Create labels once fonts have been loaded.
+<span class="nc bnc" id="L35" title="All 4 branches missed.">        if (labels.isEmpty() &amp;&amp; uiAssets.hasFontsLoaded()) {</span>
+<span class="nc" id="L36">            var labelStyle = new Label.LabelStyle(uiAssets.getSmallFont(), Color.BLACK);</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            for (int i = 0; i &lt; gameLogic.getGameMap().getAvailablePrefabs().size(); i++) {</span>
+<span class="nc" id="L38">                labels.add(new Label(&quot;&quot;, labelStyle));</span>
+            }
+        }
+
+        // Create image once spritesheet has been loaded.
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        if (boxImage == null &amp;&amp; uiAssets.hasSpritesheetLoaded()) {</span>
+<span class="nc" id="L44">            var textureRegion = new TextureRegion(uiAssets.getSpritesheet(), 320, 64, 64, 32);</span>
+<span class="nc" id="L45">            boxImage = new Image(textureRegion);</span>
+        }
+
+        // TODO: This code assumes 4 labels (building types).
+<span class="nc bnc" id="L49" title="All 6 branches missed.">        if (getChildren().isEmpty() &amp;&amp; !labels.isEmpty() &amp;&amp; boxImage != null) {</span>
+<span class="nc" id="L50">            add(boxImage).size(64.0f * 3.0f, 32.0f * 3.0f);</span>
+<span class="nc" id="L51">            row();</span>
+<span class="nc" id="L52">            add(labels.get(1)).align(Align.left).padLeft(12.0f).padTop(-165.0f);</span>
+<span class="nc" id="L53">            row();</span>
+<span class="nc" id="L54">            add(labels.get(2)).align(Align.left).padLeft(12.0f).padTop(-116.0f);</span>
+<span class="nc" id="L55">            row();</span>
+<span class="nc" id="L56">            add(labels.get(3)).align(Align.left).padLeft(12.0f).padTop(-68.0f);</span>
+<span class="nc" id="L57">            row();</span>
+<span class="nc" id="L58">            add(labels.get(4)).align(Align.left).padLeft(12.0f).padTop(-23.0f);</span>
+        }
+
+        // Update label text.
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (!labels.isEmpty()) {</span>
+<span class="nc" id="L63">            var map = gameLogic.getGameMap();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            for (int i = 0; i &lt; map.getAvailablePrefabs().size(); i++) {</span>
+<span class="nc" id="L65">                var prefab = map.getAvailablePrefabs().get(i);</span>
+<span class="nc" id="L66">                var count = map.getBuildingCount(prefab);</span>
+<span class="nc" id="L67">                labels.get(i).setText(String.format(&quot;%s: %d&quot;, prefab.getName(), count));</span>
+            }
+        }
+<span class="nc" id="L70">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

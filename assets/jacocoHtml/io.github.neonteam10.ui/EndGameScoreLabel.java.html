@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EndGameScoreLabel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">EndGameScoreLabel.java</span></div><h1>EndGameScoreLabel.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
+import io.github.neonteam10.GameLogic;
+
+public class EndGameScoreLabel extends Table {
+    private GameLogic gameLogic;
+    private UiAssets uiAssets;
+    private Image image;
+    private Label label;
+    private Stack stack;
+<span class="nc" id="L18">    public EndGameScoreLabel(UiAssets uiAssets, GameLogic gameLogic) {</span>
+<span class="nc" id="L19">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L20">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L21">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L25">        super.act(delta);</span>
+<span class="nc bnc" id="L26" title="All 8 branches missed.">        if (uiAssets.hasFontsLoaded() &amp;&amp; uiAssets.hasSpritesheetLoaded() &amp;&amp; image == null &amp;&amp; label == null) {</span>
+<span class="nc" id="L27">            image= new Image(new TextureRegion(uiAssets.getSpritesheet(), 288, 128, 64, 28));</span>
+<span class="nc" id="L28">            Label.LabelStyle labelStyle = new Label.LabelStyle(uiAssets.getLargeFont(), Color.BLACK);</span>
+<span class="nc" id="L29">            label = new Label(String.format(&quot;%06d&quot;, (int) gameLogic.getSatisfaction()), labelStyle);</span>
+<span class="nc" id="L30">            label.setAlignment(Align.center);</span>
+<span class="nc" id="L31">            stack = new Stack();</span>
+<span class="nc" id="L32">            stack.add(image);</span>
+<span class="nc" id="L33">            stack.add(label);</span>
+<span class="nc" id="L34">            add(stack).size(64 * 4f, 28 * 4f);</span>
+        }
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (label != null) {</span>
+<span class="nc" id="L37">            label.setText(String.format(&quot;%06d&quot;, (int) gameLogic.getSatisfaction()));</span>
+        }
+<span class="nc" id="L39">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShowAchievement.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.Achievements</a> &gt; <span class="el_source">ShowAchievement.java</span></div><h1>ShowAchievement.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.Achievements;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
+import io.github.neonteam10.ui.UiAssets;
+
+public class ShowAchievement extends Table {
+    private final UiAssets uiAssets;
+    private Label nameLabel;
+    private Label descriptionLabel;
+    private Image achievementImage;
+
+<span class="nc" id="L18">    public ShowAchievement(UiAssets uiAssets) {</span>
+<span class="nc" id="L19">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L20">        setFillParent(true);</span>
+<span class="nc" id="L21">        center();</span>
+<span class="nc" id="L22">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L26">        super.act(delta);</span>
+
+        // Create label once fonts have been loaded.
+<span class="nc bnc" id="L29" title="All 4 branches missed.">        if (nameLabel == null &amp;&amp; uiAssets.hasFontsLoaded()) {</span>
+<span class="nc" id="L30">            var nameStyle = new Label.LabelStyle(uiAssets.getSmallFont(), Color.BLACK);</span>
+<span class="nc" id="L31">            nameLabel = new Label(&quot;&quot;, nameStyle);</span>
+<span class="nc" id="L32">            descriptionLabel = new Label(&quot;&quot;, nameStyle);</span>
+        }
+
+        // Create image once sprite sheet has been loaded.
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (achievementImage == null &amp;&amp; uiAssets.hasSpritesheetLoaded()) {</span>
+<span class="nc" id="L37">            var textureRegion = new TextureRegion(uiAssets.getSpritesheet(), 288, 132, 64, 32);</span>
+<span class="nc" id="L38">            achievementImage = new Image(textureRegion);</span>
+        }
+
+        // Add children once they have been created.
+<span class="nc bnc" id="L42" title="All 6 branches missed.">        if (getChildren().isEmpty() &amp;&amp; nameLabel != null &amp;&amp; achievementImage != null) {</span>
+<span class="nc" id="L43">            add(achievementImage).size(64.0f * 3.0f, 32.0f * 3.0f);</span>
+<span class="nc" id="L44">            row();</span>
+<span class="nc" id="L45">            add(nameLabel).align(Align.center);</span>
+<span class="nc" id="L46">            row();</span>
+<span class="nc" id="L47">            add(descriptionLabel).align(Align.center);</span>
+        }
+
+<span class="nc" id="L50">    }</span>
+
+    public void AchievementAppear() {
+<span class="nc" id="L53">        setVisible(true);</span>
+<span class="nc" id="L54">        addAction(Actions.sequence(</span>
+<span class="nc" id="L55">                Actions.fadeIn(0.3f),</span>
+<span class="nc" id="L56">                Actions.delay(1.5f),</span>
+<span class="nc" id="L57">                Actions.fadeOut(0.3f),</span>
+<span class="nc" id="L58">                Actions.run(() -&gt; setVisible(false))</span>
+
+        ));
+<span class="nc" id="L61">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

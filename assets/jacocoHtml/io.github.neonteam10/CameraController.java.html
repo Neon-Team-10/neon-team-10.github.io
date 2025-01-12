@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CameraController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">CameraController.java</span></div><h1>CameraController.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+
+/**
+ * A class which holds the {@link Camera} object and implements the camera movement logic.
+ */
+public class CameraController extends InputAdapter {
+    private final OrthographicCamera camera;
+    private final Vector2 lastDragPosition;
+
+<span class="nc" id="L20">    private boolean isCurrentlyDragging = false;</span>
+<span class="nc" id="L21">    private float desiredZoomLevel = 0.5f;</span>
+
+    // Map boundaries for constraining the camera.
+    private float mapWidth;
+    private float mapHeight;
+
+    // Maximum zoom level to keep the whole map visible
+    private float maxZoomLevel;
+
+<span class="nc" id="L30">    public CameraController() {</span>
+<span class="nc" id="L31">        camera = new OrthographicCamera();</span>
+<span class="nc" id="L32">        camera.zoom = desiredZoomLevel;</span>
+<span class="nc" id="L33">        lastDragPosition = new Vector2();</span>
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Set the map dimensions to constrain the camera.
+     *
+     * @param mapWidth  the width of the map in pixels
+     * @param mapHeight the height of the map in pixels
+     */
+    public void setMapDimensions(float mapWidth, float mapHeight) {
+<span class="nc" id="L43">        this.mapWidth = mapWidth;</span>
+<span class="nc" id="L44">        this.mapHeight = mapHeight;</span>
+<span class="nc" id="L45">        updateMaxZoomLevel();</span>
+<span class="nc" id="L46">    }</span>
+
+    /**
+     * Updates the camera's viewport size.
+     *
+     * @param width  the new viewport width
+     * @param height the new viewport height
+     */
+    public void setViewportDimensions(int width, int height) {
+<span class="nc" id="L55">        camera.viewportWidth = width;</span>
+<span class="nc" id="L56">        camera.viewportHeight = height;</span>
+<span class="nc" id="L57">        updateMaxZoomLevel();</span>
+<span class="nc" id="L58">    }</span>
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+<span class="nc" id="L62">        desiredZoomLevel += amountY * 0.03f;</span>
+<span class="nc" id="L63">        return true;</span>
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (button == Input.Buttons.RIGHT) {</span>
+<span class="nc" id="L69">            isCurrentlyDragging = true;</span>
+<span class="nc" id="L70">            lastDragPosition.set(screenX, screenY);</span>
+<span class="nc" id="L71">            return true;</span>
+        }
+<span class="nc" id="L73">        return false;</span>
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (isCurrentlyDragging) {</span>
+<span class="nc" id="L79">            isCurrentlyDragging = false;</span>
+<span class="nc" id="L80">            return true;</span>
+        }
+<span class="nc" id="L82">        return false;</span>
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (!isCurrentlyDragging) {</span>
+<span class="nc" id="L88">            return false;</span>
+        }
+
+        // Convert mouse movement into world space which allows movement of the camera whilst keeping the mouse cursor
+        // fixed relative to the same point in world space.
+<span class="nc" id="L93">        var mouseNow = camera.unproject(new Vector3(screenX, screenY, 0));</span>
+<span class="nc" id="L94">        camera.translate(camera.unproject(new Vector3(lastDragPosition, 0)).sub(mouseNow));</span>
+<span class="nc" id="L95">        lastDragPosition.set(screenX, screenY);</span>
+<span class="nc" id="L96">        return true;</span>
+    }
+
+    /**
+     * Handles any input events and updates the camera accordingly. Should be called once per frame.
+     *
+     * @param deltaTime the delta time between the last call of update
+     */
+    public void update(float deltaTime) {
+        // Allow use of WSAD keys to move camera if not currently dragging the camera. Decide speed factor based on
+        // whether shift is currently held.
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (!isCurrentlyDragging) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            final var cameraMovementSpeed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ? 250.0f : 100.0f;</span>
+<span class="nc" id="L109">            final var cameraMovementDelta = deltaTime * cameraMovementSpeed;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (Gdx.input.isKeyPressed(Input.Keys.W)) {</span>
+<span class="nc" id="L111">                camera.translate(0.0f, cameraMovementDelta);</span>
+            }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            if (Gdx.input.isKeyPressed(Input.Keys.S)) {</span>
+<span class="nc" id="L114">                camera.translate(0.0f, -cameraMovementDelta);</span>
+            }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            if (Gdx.input.isKeyPressed(Input.Keys.A)) {</span>
+<span class="nc" id="L117">                camera.translate(-cameraMovementDelta, 0.0f);</span>
+            }
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (Gdx.input.isKeyPressed(Input.Keys.D)) {</span>
+<span class="nc" id="L120">                camera.translate(cameraMovementDelta, 0.0f);</span>
+            }
+        }
+<span class="nc" id="L123">        camera.update();</span>
+
+        // Handle camera zooming. The code below gives the effect of zooming into a point by keeping the mouse position
+        // constant relative to world space.
+<span class="nc" id="L127">        var mouseStart = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));</span>
+
+        // Clamp desired zoom level. Do this every frame in case the maximum zoom level gets updated.
+<span class="nc" id="L130">        desiredZoomLevel = MathUtils.clamp(desiredZoomLevel, 0.2f, maxZoomLevel);</span>
+
+        // Update zoom level and call update so that the next call to unproject has updated values.
+<span class="nc" id="L133">        camera.zoom = Interpolation.linear.apply(camera.zoom, desiredZoomLevel, deltaTime * 12.0f);</span>
+<span class="nc" id="L134">        camera.update();</span>
+
+        // The difference in mouse position in world space before and after zooming is the amount we need to
+        // translate by to keep the mouse position constant.
+<span class="nc" id="L138">        var mouseEnd = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));</span>
+<span class="nc" id="L139">        camera.translate(mouseStart.sub(mouseEnd));</span>
+
+        // Clamp camera position to the map boundaries.
+<span class="nc" id="L142">        var halfViewport = new Vector2(camera.viewportWidth, camera.viewportHeight).scl(camera.zoom / 2.0f);</span>
+<span class="nc" id="L143">        camera.position.x = MathUtils.clamp(camera.position.x, halfViewport.x, mapWidth - halfViewport.x);</span>
+<span class="nc" id="L144">        camera.position.y = MathUtils.clamp(camera.position.y, halfViewport.y, mapHeight - halfViewport.y);</span>
+
+        // Final camera update with the new position.
+<span class="nc" id="L147">        camera.update();</span>
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Updates the maximum zoom level to ensure the whole map fits within the viewport.
+     */
+    private void updateMaxZoomLevel() {
+        // Calculate the maximum zoom level based on the aspect ratio and map size.
+<span class="nc" id="L155">        float viewportAspectRatio = camera.viewportWidth / camera.viewportHeight;</span>
+<span class="nc" id="L156">        float mapAspectRatio = mapWidth / mapHeight;</span>
+
+        // Set maxZoomLevel based on the smallest fitting value for width or height.
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (viewportAspectRatio &lt; mapAspectRatio) {</span>
+            // Taller aspect ratio: limit based on map height.
+<span class="nc" id="L161">            maxZoomLevel = mapHeight / camera.viewportHeight;</span>
+        } else {
+            // Wider aspect ratio: limit based on map width.
+<span class="nc" id="L164">            maxZoomLevel = mapWidth / camera.viewportWidth;</span>
+        }
+<span class="nc" id="L166">    }</span>
+
+    /**
+     * @return the orthographic camera controlled by this class
+     */
+    public OrthographicCamera getCamera() {
+<span class="nc" id="L172">        return camera;</span>
+    }
+
+    /**
+     * @return whether the user is currently panning the camera with the mouse
+     */
+    public boolean isPanning() {
+<span class="nc" id="L179">        return isCurrentlyDragging;</span>
+    }
+
+    /**
+     * @return whether the camera is currently zooming in
+     */
+    public boolean isZoomingIn() {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        return (desiredZoomLevel - camera.zoom) &lt; -0.01f;</span>
+    }
+
+    /**
+     * @return whether the camera is currently zooming out
+     */
+    public boolean isZoomingOut() {
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        return (desiredZoomLevel - camera.zoom) &gt; 0.01f;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Leaderboard.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">Leaderboard.java</span></div><h1>Leaderboard.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import java.io.*;
+import java.util.*;
+
+public class Leaderboard {
+    Map&lt;String, Integer&gt; scores;
+    String filename;
+<span class="nc" id="L9">    public Leaderboard(String filename) {</span>
+<span class="nc" id="L10">        this.filename = filename;</span>
+<span class="nc" id="L11">        File f = new File(filename);</span>
+<span class="nc bnc" id="L12" title="All 2 branches missed.">        if (!f.exists()) {</span>
+            try {
+<span class="nc" id="L14">                f.createNewFile();</span>
+<span class="nc" id="L15">                scores = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L16">                writeLeaderboard();</span>
+            }
+<span class="nc" id="L18">            catch (Exception e) {</span>
+<span class="nc" id="L19">                e.printStackTrace();</span>
+<span class="nc" id="L20">            }</span>
+        }
+<span class="nc" id="L22">        readLeaderboard();</span>
+<span class="nc" id="L23">    }</span>
+
+    // Typical usage after user selected:
+    // leaderboard.addEntry(&quot;NEON10&quot;, (int) (satisfaction * 10));
+    // leaderboard.writeLeaderboard();
+    // score should be * 10.
+    public void writeLeaderboard() {
+        try {
+<span class="nc" id="L31">            File file = new File(filename);</span>
+<span class="nc" id="L32">            FileOutputStream fileStream = new FileOutputStream(file);</span>
+<span class="nc" id="L33">            ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);</span>
+
+<span class="nc" id="L35">            objectStream.writeObject(scores);</span>
+<span class="nc" id="L36">            objectStream.flush();</span>
+<span class="nc" id="L37">            objectStream.close();</span>
+<span class="nc" id="L38">            fileStream.close();</span>
+<span class="nc" id="L39">        } catch (Exception e) {</span>
+<span class="nc" id="L40">            e.printStackTrace();</span>
+<span class="nc" id="L41">        }</span>
+<span class="nc" id="L42">    }</span>
+
+    public void readLeaderboard() {
+        try {
+<span class="nc" id="L46">            File file = new File(filename);</span>
+<span class="nc" id="L47">            FileInputStream fileStream = new FileInputStream(file);</span>
+<span class="nc" id="L48">            ObjectInputStream objectStream = new ObjectInputStream(fileStream);</span>
+
+<span class="nc" id="L50">            scores = (Map&lt;String, Integer&gt;) objectStream.readObject();</span>
+
+<span class="nc" id="L52">            objectStream.close();</span>
+<span class="nc" id="L53">            fileStream.close();</span>
+<span class="nc" id="L54">        } catch (Exception e) {</span>
+<span class="nc" id="L55">            e.printStackTrace();</span>
+<span class="nc" id="L56">        }</span>
+<span class="nc" id="L57">    }</span>
+
+    public void addEntry(String username, int score) {
+<span class="nc" id="L60">        scores.put(username, score);</span>
+<span class="nc" id="L61">    }</span>
+
+    public List&lt;Map.Entry&lt;String, Integer&gt;&gt; getTopFive() {
+<span class="nc" id="L64">        List&lt;Map.Entry&lt;String, Integer&gt;&gt; topFive = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (scores != null) {</span>
+<span class="nc" id="L66">            Set&lt;Map.Entry&lt;String, Integer&gt;&gt; entries = scores.entrySet();</span>
+<span class="nc" id="L67">            List&lt;Map.Entry&lt;String, Integer&gt;&gt; list = new ArrayList&lt;&gt;(entries);</span>
+<span class="nc" id="L68">            list.sort((entry1, entry2) -&gt; entry2.getValue().compareTo(entry1.getValue()));</span>
+<span class="nc bnc" id="L69" title="All 4 branches missed.">            for (int i = 0; i &lt; 5 &amp;&amp; i &lt; list.size(); i++) {</span>
+<span class="nc" id="L70">                topFive.add(list.get(i));</span>
+            }
+        }
+<span class="nc" id="L73">        return topFive;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L78">        return scores.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

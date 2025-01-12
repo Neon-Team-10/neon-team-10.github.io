@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuildingToolbar.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">BuildingToolbar.java</span></div><h1>BuildingToolbar.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
+
+import io.github.neonteam10.GameLogic;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A class which represents the building toolbar and next building timer UI elements.
+ */
+public class BuildingToolbar extends Stack {
+    private final UiAssets uiAssets;
+    private final GameLogic gameLogic;
+    private final Table toolbarTable;
+    private final List&lt;Image&gt; backgroundImages;
+    private Label nextBuildingTimeLabel;
+    private TextureRegion selectionBoxTexture;
+
+<span class="nc" id="L30">    public BuildingToolbar(UiAssets uiAssets, GameLogic gameLogic) {</span>
+<span class="nc" id="L31">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L32">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L33">        toolbarTable = new Table();</span>
+<span class="nc" id="L34">        backgroundImages = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L35">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L39">        super.act(delta);</span>
+
+        // Create children when assets have loaded.
+<span class="nc bnc" id="L42" title="All 6 branches missed.">        if (backgroundImages.isEmpty() &amp;&amp; uiAssets.hasSpritesheetLoaded() &amp;&amp; uiAssets.hasFontsLoaded()) {</span>
+            // Create a drawable for the tooltip box and give it some padding as otherwise the text intersects the edge
+            // of the box.
+<span class="nc" id="L45">            var tooltipBoxTexture = new TextureRegion(uiAssets.getSpritesheet(), 320, 32, 64, 32);</span>
+<span class="nc" id="L46">            var tooltipBoxDrawable = new TextureRegionDrawable(tooltipBoxTexture);</span>
+<span class="nc" id="L47">            tooltipBoxDrawable.setPadding(5.0f, 8.0f, 5.0f, 8.0f);</span>
+
+            // Create a tooltip style.
+<span class="nc" id="L50">            var tooltipLabelStyle = new Label.LabelStyle(uiAssets.getSmallFont(), Color.BLACK);</span>
+<span class="nc" id="L51">            var tooltipStyle = new TextTooltip.TextTooltipStyle(tooltipLabelStyle, tooltipBoxDrawable);</span>
+
+<span class="nc" id="L53">            var textureRegion = new TextureRegion(uiAssets.getSpritesheet(), 32, 160, 32, 32);</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            for (var prefab : gameLogic.getGameMap().getAvailablePrefabs()) {</span>
+<span class="nc" id="L55">                final int index = gameLogic.getGameMap().getAvailablePrefabs().indexOf(prefab);</span>
+<span class="nc" id="L56">                var image = new Image(textureRegion);</span>
+<span class="nc" id="L57">                image.addListener(new ClickListener() {</span>
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L60">                        gameLogic.setSelectedPrefabIndex(index);</span>
+<span class="nc" id="L61">                    }</span>
+                });
+
+                // Add tooltip to display on image hover.
+<span class="nc" id="L65">                var tooltip = new TextTooltip(prefab.getName(), tooltipStyle);</span>
+<span class="nc" id="L66">                tooltip.setInstant(true);</span>
+<span class="nc" id="L67">                image.addListener(tooltip);</span>
+
+<span class="nc" id="L69">                backgroundImages.add(image);</span>
+<span class="nc" id="L70">            }</span>
+
+            // Create next building time label.
+<span class="nc" id="L73">            var timeLabelStyle = new Label.LabelStyle(uiAssets.getLargeFont(), Color.BLACK);</span>
+<span class="nc" id="L74">            nextBuildingTimeLabel = new Label(&quot;&quot;, timeLabelStyle);</span>
+<span class="nc" id="L75">            nextBuildingTimeLabel.setAlignment(Align.center);</span>
+<span class="nc" id="L76">            selectionBoxTexture = new TextureRegion(uiAssets.getSpritesheet(), 384, 32, 32, 32);</span>
+
+            // Add toolbar table to the stack, and add the background images to the table.
+<span class="nc" id="L79">            add(toolbarTable);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            for (int i = 0; i &lt; backgroundImages.size(); i++) {</span>
+<span class="nc" id="L81">                var cell = toolbarTable.add(backgroundImages.get(i)).size(64.0f, 64.0f);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                if (i != 0) {</span>
+<span class="nc" id="L83">                    cell.padLeft(20.0f);</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (nextBuildingTimeLabel != null) {</span>
+            // Update label text.
+<span class="nc" id="L90">            var text = String.format(&quot;Next building in %d&quot;, (int) gameLogic.getNextBuildingTime());</span>
+<span class="nc" id="L91">            nextBuildingTimeLabel.setText(text);</span>
+
+            // Show toolbar if player can place a building, otherwise show the next building timer.
+<span class="nc" id="L94">            boolean canPlaceBuilding = gameLogic.canPlaceBuilding();</span>
+<span class="nc" id="L95">            toolbarTable.setVisible(canPlaceBuilding);</span>
+
+            // Remove and add label so it doesn't affect the layout of the toolbar.
+<span class="nc" id="L98">            removeActor(nextBuildingTimeLabel);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (!canPlaceBuilding) {</span>
+<span class="nc" id="L100">                add(nextBuildingTimeLabel);</span>
+            }
+        }
+<span class="nc" id="L103">    }</span>
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+<span class="nc" id="L107">        super.draw(batch, parentAlpha);</span>
+
+        // Don't draw building icons or selection box if the toolbar is not supposed to be visible.
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (!toolbarTable.isVisible()) {</span>
+<span class="nc" id="L111">            return;</span>
+        }
+
+        // Draw building icons in each box.
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        for (int i = 0; i &lt; backgroundImages.size(); i++) {</span>
+<span class="nc" id="L116">            var image = backgroundImages.get(i);</span>
+<span class="nc" id="L117">            var coords = image.localToScreenCoordinates(new Vector2(0, 0));</span>
+
+            // Offset slightly.
+<span class="nc" id="L120">            coords.add(8.0f, -10.0f);</span>
+
+<span class="nc" id="L122">            var prefab = gameLogic.getGameMap().getAvailablePrefabs().get(i);</span>
+<span class="nc" id="L123">            batch.draw(prefab.getNormalTexture(), coords.x, Gdx.graphics.getHeight() - coords.y, 48.0f, 48.0f);</span>
+        }
+
+<span class="nc" id="L126">        var prefabIndex = gameLogic.getSelectedPrefabIndex();</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">        if (prefabIndex &lt; 0 || selectionBoxTexture == null) {</span>
+            // No selected prefab.
+<span class="nc" id="L129">            return;</span>
+        }
+
+        // Draw selection image on top of clicked cell.
+<span class="nc" id="L133">        var image = backgroundImages.get(prefabIndex);</span>
+<span class="nc" id="L134">        var coords = image.localToScreenCoordinates(new Vector2(0, 0));</span>
+<span class="nc" id="L135">        batch.draw(selectionBoxTexture, coords.x, Gdx.graphics.getHeight() - coords.y, 64.0f, 64.0f);</span>
+<span class="nc" id="L136">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

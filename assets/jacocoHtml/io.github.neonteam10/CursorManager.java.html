@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CursorManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">CursorManager.java</span></div><h1>CursorManager.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.utils.Disposable;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * A class to manage all the cursors used in the game. It queues the loading of the bitmaps and automatically
+ * creates the cursor objects when the bitmap has loaded.
+ */
+public class CursorManager implements Disposable {
+    private final AssetManager assetManager;
+
+    // A map of our cursor enum to GDX cursors.
+    private final Map&lt;GameCursor, Cursor&gt; cursorMap;
+
+<span class="fc" id="L22">    public CursorManager(AssetManager assetManager) {</span>
+<span class="fc" id="L23">        this.assetManager = assetManager;</span>
+<span class="fc" id="L24">        cursorMap = new HashMap&lt;&gt;();</span>
+
+        // Queue loading of all cursors.
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        for (var cursor : GameCursor.values()) {</span>
+<span class="fc" id="L28">            assetManager.load(cursor.getPath(), Pixmap.class);</span>
+        }
+
+        // Finish loading standard pointer straight away so it can be used as a fallback.
+<span class="fc" id="L32">        assetManager.finishLoadingAsset(GameCursor.POINTER.getPath());</span>
+
+        // Call update to load pointer.
+<span class="fc" id="L35">        update();</span>
+<span class="fc" id="L36">    }</span>
+
+    /**
+     * Tries to set the current cursor to the given cursor. If the given cursor is not loaded, fallback to the
+     * pointer cursor.
+     *
+     * @param cursor the desired cursor
+     */
+    public void setCursor(GameCursor cursor) {
+        // Cursors.POINTER is guaranteed to be loaded. Use it as a fallback in case the requested cursor isn't loaded.
+<span class="nc" id="L46">        var gdxCursor = cursorMap.getOrDefault(cursor, cursorMap.get(GameCursor.POINTER));</span>
+<span class="nc" id="L47">        Gdx.graphics.setCursor(gdxCursor);</span>
+<span class="nc" id="L48">    }</span>
+
+    /**
+     * Creates cursor objects for any loaded pixmaps. Should be called every frame.
+     */
+    public void update() {
+        // See if any pixmaps have been loaded.
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        for (var cursor : GameCursor.values()) {</span>
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">            if (!cursorMap.containsKey(cursor) &amp;&amp; assetManager.isLoaded(cursor.getPath())) {</span>
+<span class="fc" id="L57">                var pixmap = assetManager.get(cursor.getPath(), Pixmap.class);</span>
+<span class="fc" id="L58">                cursorMap.put(cursor, Gdx.graphics.newCursor(pixmap, 0, 0));</span>
+            }
+        }
+<span class="fc" id="L61">    }</span>
+
+    @Override
+    public void dispose() {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        for (var gdxCursor : cursorMap.values()) {</span>
+<span class="nc" id="L66">            gdxCursor.dispose();</span>
+<span class="nc" id="L67">        }</span>
+<span class="nc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

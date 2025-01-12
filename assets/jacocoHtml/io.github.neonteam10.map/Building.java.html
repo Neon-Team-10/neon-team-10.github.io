@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Building.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.map</a> &gt; <span class="el_source">Building.java</span></div><h1>Building.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.map;
+
+/**
+ * A class which represents a building placed on the map.
+ */
+public class Building {
+    private final BuildingPrefab prefab;
+    private final int x;
+    private final int y;
+    private final boolean road;
+
+<span class="fc" id="L12">    public Building(BuildingPrefab prefab, int x, int y) {</span>
+<span class="fc" id="L13">        this.prefab = prefab;</span>
+<span class="fc" id="L14">        this.x = x;</span>
+<span class="fc" id="L15">        this.y = y;</span>
+<span class="fc" id="L16">        this.road = false;</span>
+        //System.out.println(&quot;Building &quot; + prefab.getName() + &quot; at &quot; + x + &quot;, &quot; + y);
+<span class="fc" id="L18">    }</span>
+
+<span class="fc" id="L20">    public Building(BuildingPrefab prefab, int x, int y, boolean road) {</span>
+<span class="fc" id="L21">        this.prefab = prefab;</span>
+<span class="fc" id="L22">        this.x = x;</span>
+<span class="fc" id="L23">        this.y = y;</span>
+<span class="fc" id="L24">        this.road = road;</span>
+        //System.out.println(&quot;Building &quot; + prefab.getName() + &quot; at &quot; + x + &quot;, &quot; + y);
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * @return the prefab this building was constructed from
+     */
+    public BuildingPrefab getPrefab() {
+<span class="nc" id="L32">        return prefab;</span>
+    }
+
+    /**
+     * @return the x position of the building in tiles on the game map
+     */
+    public int getX() {
+<span class="fc" id="L39">        return x;</span>
+    }
+
+    /**
+     * @return the y position of the building in tiles on the game map
+     */
+    public int getY() {
+<span class="fc" id="L46">        return y;</span>
+    }
+    /**
+    * @return the boolean representing whether this building is a road or not
+    */
+    public boolean getRoad() {
+<span class="fc" id="L52">        return road;</span>
+    }
+    public boolean isAccommodation() {
+<span class="nc" id="L55">        return getPrefab().getName().equals(&quot;Accommodation&quot;);</span>
+    }
+
+    public boolean isCanteen() {
+<span class="nc" id="L59">        return getPrefab().getName().equals(&quot;Canteen&quot;);</span>
+    }
+
+    public boolean isRecreation() {
+<span class="nc" id="L63">        return getPrefab().getName().equals(&quot;Recreation&quot;);</span>
+    }
+
+    public boolean isStudy() {
+<span class="nc" id="L67">        return getPrefab().getName().equals(&quot;Study&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

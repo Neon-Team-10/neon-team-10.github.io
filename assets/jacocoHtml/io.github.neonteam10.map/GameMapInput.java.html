@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameMapInput.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.map</a> &gt; <span class="el_source">GameMapInput.java</span></div><h1>GameMapInput.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.map;
+
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.math.Vector3;
+
+import io.github.neonteam10.CameraController;
+import io.github.neonteam10.GameLogic;
+
+/**
+ * A class which handles user input events on the game map.
+ */
+public class GameMapInput extends InputAdapter {
+    private final GameMap map;
+    private final GameLogic gameLogic;
+    private final CameraController cameraController;
+<span class="nc" id="L17">    private int selectedTileX = -1;</span>
+<span class="nc" id="L18">    private int selectedTileY = -1;</span>
+
+<span class="nc" id="L20">    public GameMapInput(GameMap map, GameLogic gameLogic, CameraController cameraController) {</span>
+<span class="nc" id="L21">        this.map = map;</span>
+<span class="nc" id="L22">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L23">        this.cameraController = cameraController;</span>
+<span class="nc" id="L24">    }</span>
+
+    @Override
+    public boolean keyDown(int keycode) {
+        // Allow deselecting the current prefab either by pressing escape, pressing a number out of range, or pressing
+        // the same key again.
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (keycode == Input.Keys.ESCAPE) {</span>
+<span class="nc" id="L31">            gameLogic.setSelectedPrefabIndex(-1);</span>
+<span class="nc" id="L32">            return true;</span>
+        }
+<span class="nc bnc" id="L34" title="All 4 branches missed.">        if (keycode &gt;= Input.Keys.NUM_1 &amp;&amp; keycode &lt;= Input.Keys.NUM_9) {</span>
+<span class="nc" id="L35">            int index = keycode - Input.Keys.NUM_1;</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (index == gameLogic.getSelectedPrefabIndex()) {</span>
+<span class="nc" id="L37">                gameLogic.setSelectedPrefabIndex(-1);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            } else if (gameLogic.canPlaceBuilding()) {</span>
+<span class="nc" id="L39">                gameLogic.setSelectedPrefabIndex(index);</span>
+            }
+<span class="nc" id="L41">            return true;</span>
+        }
+<span class="nc" id="L43">        return false;</span>
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+<span class="nc" id="L48">        Vector3 worldCoordinates = cameraController.getCamera().unproject(new Vector3(screenX, screenY, 0));</span>
+<span class="nc" id="L49">        selectedTileX = (int) (worldCoordinates.x / map.getTileWidthPx());</span>
+<span class="nc" id="L50">        selectedTileY = (int) (worldCoordinates.y / map.getTileHeightPx());</span>
+
+        // Set value to -1 if outside the map bounds.
+<span class="nc bnc" id="L53" title="All 4 branches missed.">        if (selectedTileX &lt; 0 || selectedTileX &gt;= map.getWidth()) {</span>
+<span class="nc" id="L54">            selectedTileX = -1;</span>
+        }
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (selectedTileY &lt; 0 || selectedTileY &gt;= map.getHeight()) {</span>
+<span class="nc" id="L57">            selectedTileY = -1;</span>
+        }
+<span class="nc" id="L59">        return true;</span>
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+<span class="nc" id="L64">        var prefab = gameLogic.getSelectedPrefab();</span>
+<span class="nc bnc" id="L65" title="All 8 branches missed.">        if (button == Input.Buttons.LEFT &amp;&amp; selectedTileX &gt;= 0 &amp;&amp; selectedTileY &gt;= 0 &amp;&amp; prefab != null) {</span>
+<span class="nc" id="L66">            int placementX = getPlacementTileX();</span>
+<span class="nc" id="L67">            int placementY = getPlacementTileY();</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">            if (gameLogic.canPlaceBuilding() &amp;&amp; map.canPlaceBuilding(prefab, placementX, placementY)) {</span>
+<span class="nc" id="L69">                map.placeBuilding(prefab, placementX, placementY);</span>
+                
+                // Deselect prefab after successfully placing a building.
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                if(!(prefab.getName().equals(&quot;Road&quot;))) {</span>
+<span class="nc" id="L73">                    gameLogic.setSelectedPrefabIndex(-1);</span>
+                }
+            }
+        }
+<span class="nc" id="L77">        return true;</span>
+    }
+
+    /**
+     * @return the x coordinate of the currently hovered tile
+     */
+    public int getSelectedTileX() {
+<span class="nc" id="L84">        return selectedTileX;</span>
+    }
+
+    /**
+     * @return the y coordinate of the currently hovered tile
+     */
+    public int getSelectedTileY() {
+<span class="nc" id="L91">        return selectedTileY;</span>
+    }
+
+    /**
+     * @return the x coordinate of the centre of the currently selected prefab in world space
+     */
+    public int getPlacementTileX() {
+<span class="nc" id="L98">        var prefab = gameLogic.getSelectedPrefab();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (prefab == null) {</span>
+<span class="nc" id="L100">            return selectedTileX;</span>
+        }
+<span class="nc" id="L102">        return selectedTileX - prefab.getWidth() / 2;</span>
+    }
+
+    /**
+     * @return the y coordinate of the centre of the currently selected prefab in world space
+     */
+    public int getPlacementTileY() {
+<span class="nc" id="L109">        var prefab = gameLogic.getSelectedPrefab();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (prefab == null) {</span>
+<span class="nc" id="L111">            return selectedTileY;</span>
+        }
+<span class="nc" id="L113">        return selectedTileY - prefab.getHeight() / 2;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

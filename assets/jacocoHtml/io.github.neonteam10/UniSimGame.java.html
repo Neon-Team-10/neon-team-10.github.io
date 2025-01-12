@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UniSimGame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">UniSimGame.java</span></div><h1>UniSimGame.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+
+/**
+ * Class implementing the main game loop by extending from {@link Game}.
+ */
+<span class="fc" id="L16">public class UniSimGame extends Game {</span>
+    // Use LibGDX's AssetManager class which handles asynchronous loading and unloading of assets for us.
+    private AssetManager assetManager;
+    private CursorManager cursorManager;
+    private GameScreen gameScreen;
+
+    @Override
+    public void create() {
+        // Create the asset manager and register the loader for TTF fonts and tiled maps.
+<span class="fc" id="L25">        assetManager = new AssetManager();</span>
+<span class="fc" id="L26">        assetManager.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(new InternalFileHandleResolver()));</span>
+<span class="fc" id="L27">        assetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));</span>
+
+        // Load tiled map.
+<span class="fc" id="L30">        assetManager.load(&quot;maps/map.tmx&quot;, TiledMap.class);</span>
+
+<span class="fc" id="L32">        cursorManager = new CursorManager(assetManager);</span>
+
+        // Create all of our screens.
+<span class="nc" id="L35">        gameScreen = new GameScreen(this, assetManager, cursorManager);</span>
+
+        // Go straight to the main game screen.
+<span class="nc" id="L38">        setScreen(gameScreen);</span>
+<span class="nc" id="L39">    }</span>
+
+    @Override
+    public void render() {
+        // Continuously load in assets. Block for a maximum of 17 milliseconds which should maintain roughly 60 frames
+        // per second.
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (!assetManager.update(17)) {</span>
+            // Returned false so we are still loading assets.
+            // TODO: Display some kind of loading screen?
+<span class="nc" id="L48">            return;</span>
+        }
+
+        // Create any cursors for pixmaps which have been loaded.
+<span class="nc" id="L52">        cursorManager.update();</span>
+
+        // Otherwise delegate to the current screen via the Game class.
+<span class="nc" id="L55">        super.render();</span>
+<span class="nc" id="L56">    }</span>
+
+    @Override
+    public void dispose() {
+<span class="nc" id="L60">        super.dispose();</span>
+
+        // Dispose is not called automatically for screens, Game.dispose() only calls Screen.hide().
+<span class="nc" id="L63">        gameScreen.dispose();</span>
+<span class="nc" id="L64">        cursorManager.dispose();</span>
+<span class="nc" id="L65">        assetManager.dispose();</span>
+<span class="nc" id="L66">    }</span>
+
+    public static void main(String[] args) {
+<span class="nc" id="L69">        var config = new Lwjgl3ApplicationConfiguration();</span>
+<span class="nc" id="L70">        config.setTitle(&quot;UniSim&quot;);</span>
+
+        // Limit frame rate to display refresh rate.
+<span class="nc" id="L73">        config.useVsync(true);</span>
+
+        // Create an application using the LWJGL3 (desktop) backend.
+<span class="nc" id="L76">        new Lwjgl3Application(new UniSimGame());</span>
+<span class="nc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

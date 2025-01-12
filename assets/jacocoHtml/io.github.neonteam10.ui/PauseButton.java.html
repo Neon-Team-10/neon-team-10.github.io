@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PauseButton.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">PauseButton.java</span></div><h1>PauseButton.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
+import io.github.neonteam10.GameLogic;
+
+public class PauseButton extends Table {
+    public ImageButton pause;
+    private final UiAssets uiAssets;
+    private final GameLogic gameLogic;
+    private final Table pauseTable;
+
+<span class="nc" id="L18">    public PauseButton(UiAssets uiAssets, GameLogic gameLogic, Table pauseTable) {</span>
+<span class="nc" id="L19">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L20">        this.gameLogic = gameLogic;</span>
+
+<span class="nc" id="L22">        this.pauseTable = pauseTable;</span>
+<span class="nc" id="L23">    }</span>
+
+    public void act(float delta) {
+<span class="nc" id="L26">        super.act(delta);</span>
+
+<span class="nc bnc" id="L28" title="All 4 branches missed.">        if (pause == null &amp;&amp; uiAssets.hasSpritesheetLoaded()) {</span>
+<span class="nc" id="L29">            pause = new ImageButton(new TextureRegionDrawable(new TextureRegion(uiAssets.getSpritesheet(), 224, 254, 32, 32)));</span>
+<span class="nc" id="L30">            pause.getStyle().imageChecked = new TextureRegionDrawable(new TextureRegion(uiAssets.getSpritesheet(), 224, 224, 32, 32));</span>
+<span class="nc" id="L31">            pause.setTransform(true);</span>
+<span class="nc" id="L32">            pause.setOrigin(Align.center);</span>
+<span class="nc" id="L33">            pause.setScale(3);</span>
+<span class="nc" id="L34">            pause.setChecked(true);</span>
+<span class="nc" id="L35">            pause.addListener(new ClickListener() {</span>
+                  @Override
+                  public void clicked(InputEvent event, float x, float y) {
+<span class="nc" id="L38">                      gameLogic.setPaused(pause.isChecked());</span>
+<span class="nc" id="L39">                      pauseTable.setVisible(gameLogic.getPaused());</span>
+
+<span class="nc" id="L41">                  }</span>
+              });
+<span class="nc" id="L43">            add(pause);</span>
+        }
+<span class="nc" id="L45">    }</span>
+
+    public void setChecked(boolean checked) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (pause != null) {</span>
+<span class="nc" id="L49">            pause.setChecked(checked);</span>
+        }
+<span class="nc" id="L51">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

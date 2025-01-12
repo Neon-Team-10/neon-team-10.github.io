@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameLogic.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10</a> &gt; <span class="el_source">GameLogic.java</span></div><h1>GameLogic.java</h1><pre class="source lang-java linenums">package io.github.neonteam10;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.MathUtils;
+
+import io.github.neonteam10.Achievements.AchievementController;
+import io.github.neonteam10.map.BuildingPrefab;
+import io.github.neonteam10.map.GameMap;
+import io.github.neonteam10.ui.UiStage;
+
+/**
+ * A class which manages the gameplay logic, including the remaining game time, placing buildings, and calculating
+ * satisfaction and score.
+ */
+public class GameLogic {
+    private static final float TOTAL_GAME_TIME = 5f * 60.0f;
+    private static final float BUILDING_TIME = 20.0f;
+
+    private GameMap gameMap;
+    private int maximumAllowedBuildings;
+<span class="nc" id="L23">    private int selectedPrefabIndex = -1;</span>
+
+    // Timers.
+    private float remainingTime;
+    private float nextBuildingTime;
+    private boolean gameOver;
+    private boolean paused;
+    private boolean started;
+
+    // Satisfaction.
+    private float satisfaction;
+    private float newBuildingSatisfaction;
+    private int previousBuildingCount;
+    private int previousStudentCount;
+    private int studentCount;
+
+    GameScreen screen;
+
+    // Events.
+    private GameEvent currentEvent;
+    private float nextEventProbability;
+    private float checkEventTimer;
+    private float eventDurationTimer;
+    AchievementController achievementController;
+
+<span class="nc" id="L48">    public GameLogic(GameScreen screen) {</span>
+<span class="nc" id="L49">        this.screen = screen;</span>
+<span class="nc" id="L50">        remainingTime = TOTAL_GAME_TIME;</span>
+<span class="nc" id="L51">        nextBuildingTime = 0.0f;</span>
+<span class="nc" id="L52">        currentEvent = GameEvent.NONE;</span>
+<span class="nc" id="L53">        paused = true;</span>
+<span class="nc" id="L54">        started = false;</span>
+<span class="nc" id="L55">        studentCount = 0;</span>
+<span class="nc" id="L56">        maximumAllowedBuildings = 1;</span>
+<span class="nc" id="L57">    }</span>
+
+    public void setMap(GameMap gameMap) {
+<span class="nc" id="L60">        this.gameMap = gameMap;</span>
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * Finds a building prefab given its name.
+     *
+     * @param name the prefab name
+     * @return a {@link BuildingPrefab}
+     */
+    public BuildingPrefab findPrefab(String name) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (var prefab : gameMap.getAvailablePrefabs()) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (prefab.getName().equals(name)) {</span>
+<span class="nc" id="L72">                return prefab;</span>
+            }
+<span class="nc" id="L74">        }</span>
+<span class="nc" id="L75">        return null;</span>
+    }
+
+    /**
+     * Continuously updates the student satisfaction.
+     *
+     * @param deltaTime the time between the last call of this method
+     */
+    private void updateSatisfaction(float deltaTime) {
+        // Get all building types.
+<span class="nc" id="L85">        var accommodationPrefab = findPrefab(&quot;Accommodation&quot;);</span>
+<span class="nc" id="L86">        var canteenPrefab = findPrefab(&quot;Canteen&quot;);</span>
+<span class="nc" id="L87">        var studyPrefab = findPrefab(&quot;Study&quot;);</span>
+
+        // Work out the number of students based on how many accommodation buildings there are.
+<span class="nc" id="L90">        studentCount = gameMap.getBuildingCount(accommodationPrefab) * 25;</span>
+
+        // Store satisfaction to add for new buildings. 50 score per new building
+<span class="nc" id="L93">        int newBuildingCount = gameMap.getTotalBuildingCount() - previousBuildingCount;</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (newBuildingCount &gt; 0) {</span>
+<span class="nc" id="L95">            newBuildingSatisfaction = 50.0f * newBuildingCount;</span>
+        } else {
+<span class="nc" id="L97">            newBuildingSatisfaction = 0.0f;</span>
+        }
+<span class="nc" id="L99">        previousBuildingCount = gameMap.getTotalBuildingCount();</span>
+<span class="nc" id="L100">        satisfaction += newBuildingSatisfaction;</span>
+
+        // Store satisfaction to add for new students. 10 score per new student
+<span class="nc" id="L103">        int newStudentCount = studentCount - previousStudentCount;</span>
+<span class="nc" id="L104">        float newStudentSatisfaction = 0.0f;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (newStudentCount &gt; 0) {</span>
+<span class="nc" id="L106">            newStudentSatisfaction = 10.0f * newStudentCount;</span>
+        }
+<span class="nc" id="L108">        previousStudentCount = studentCount;</span>
+<span class="nc" id="L109">        satisfaction += newStudentSatisfaction;</span>
+
+        // Decrease satisfaction if there isn't enough canteen or study buildings for all the students. Each canteen
+        // can support 100 students and each study building can support 75 students. Use exponential formulas so a
+        // deficit can not just be offset by placing lots of recreation buildings.
+<span class="nc" id="L114">        var canteenDeficit = studentCount - gameMap.getBuildingCount(canteenPrefab) * 100;</span>
+<span class="nc" id="L115">        var studyDeficit = studentCount - gameMap.getBuildingCount(studyPrefab) * 75;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (canteenDeficit &gt; 0) {</span>
+<span class="nc" id="L117">            satisfaction -= ((float) Math.pow(1.3f, canteenDeficit/10)/10);</span>
+        }
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (studyDeficit &gt; 0) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            float factor = currentEvent == GameEvent.STRIKE ? 2.0f : 1f;</span>
+<span class="nc" id="L121">            satisfaction -= ((float) Math.pow(1.3f, studyDeficit/10)/10) * factor;</span>
+        }
+
+        // Decay satisfaction based on a rate determined by the amount of recreation buildings.
+        //float gainRate = getCurrentGainRate();
+
+<span class="nc" id="L127">        float Canteenbonus = gameMap.buildingGraph.getBonus(&quot;Canteen&quot;);</span>
+<span class="nc" id="L128">        float Accommodationbonus = gameMap.buildingGraph.getBonus(&quot;Accommodation&quot;);</span>
+
+<span class="nc" id="L130">        float totalBonus = (Canteenbonus+Accommodationbonus)/100;</span>
+<span class="nc" id="L131">        satisfaction += totalBonus;</span>
+
+        // Handle rain and roses events.
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (currentEvent == GameEvent.RAIN) {</span>
+<span class="nc" id="L135">            satisfaction -= 2f * deltaTime;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        } else if (currentEvent == GameEvent.ROSES) {</span>
+<span class="nc" id="L137">            satisfaction += 2f * deltaTime;</span>
+        }
+
+        // Clamp satisfaction above 0.
+<span class="nc" id="L141">        satisfaction = MathUtils.clamp(satisfaction, 0.0f, Integer.MAX_VALUE);</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * Updates the game logic.
+     *
+     * @param deltaTime the delta time between the last call of update
+     */
+    public void update(float deltaTime) {
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (gameOver) {</span>
+<span class="nc" id="L151">            return;</span>
+        }
+
+        //skip time to end
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {</span>
+<span class="nc" id="L156">            remainingTime = 0;</span>
+        }
+
+
+        // Update timers.
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (!paused) {</span>
+<span class="nc" id="L162">            remainingTime -= deltaTime;</span>
+        }
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (remainingTime &lt; 0.0f) {</span>
+<span class="nc" id="L165">            gameOver = true;</span>
+        }
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (started) {</span>
+<span class="nc" id="L168">            nextBuildingTime -= deltaTime;</span>
+        }
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (paused) {</span>
+<span class="nc" id="L171">            nextBuildingTime += deltaTime;</span>
+        }
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (nextBuildingTime &lt; 0.0f) {</span>
+            // User can place another building.
+<span class="nc" id="L175">            maximumAllowedBuildings++;</span>
+<span class="nc" id="L176">            nextBuildingTime = BUILDING_TIME;</span>
+        }
+
+        // Update satisfaction.
+<span class="nc bnc" id="L180" title="All 4 branches missed.">        if (!paused &amp;&amp; !gameOver) {</span>
+<span class="nc" id="L181">            updateSatisfaction(deltaTime);</span>
+        }
+
+        //tick achievements
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (!paused) {</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">            if (achievementController != null &amp;&amp; gameMap != null) {</span>
+<span class="nc" id="L187">                achievementController.setGameMap(gameMap);</span>
+<span class="nc" id="L188">                achievementController.AchievementsUnlocked();</span>
+            }
+        }
+
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (!paused) {</span>
+            // Tick event duration timer.
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            if (currentEvent != GameEvent.NONE) {</span>
+<span class="nc" id="L195">                eventDurationTimer -= deltaTime;</span>
+            }
+<span class="nc bnc" id="L197" title="All 2 branches missed.">            if (eventDurationTimer &lt; 0.0f) {</span>
+<span class="nc" id="L198">                currentEvent = GameEvent.NONE;</span>
+            }
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            if (currentEvent != GameEvent.NONE) {</span>
+<span class="nc" id="L201">                return;</span>
+            }
+
+
+            // Generate a random number every 2 seconds to see if we should start an event. Bias the random number slightly
+            // to prevent events from happening to close to each other.
+<span class="nc" id="L207">            nextEventProbability += deltaTime * 0.01f;</span>
+<span class="nc" id="L208">            checkEventTimer += deltaTime;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">            if (checkEventTimer &gt; 2.0f) {</span>
+<span class="nc" id="L210">                checkEventTimer = 0.0f;</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">                if (Math.min(MathUtils.random() + 0.1f, 1.0f) &lt; nextEventProbability) {</span>
+<span class="nc" id="L212">                    nextEventProbability = 0;</span>
+<span class="nc" id="L213">                    currentEvent = GameEvent.values()[MathUtils.random(GameEvent.values().length - 1)];</span>
+<span class="nc" id="L214">                    eventDurationTimer = MathUtils.random(15.0f, 45.0f);</span>
+                }
+            }
+        }
+
+
+<span class="nc" id="L220">    }</span>
+
+    /**
+     * Sets the selected building placement prefab to the given index.
+     *
+     * @param prefabIndex the prefab index
+     */
+    public void setSelectedPrefabIndex(int prefabIndex) {
+<span class="nc bnc" id="L228" title="All 4 branches missed.">        if (gameMap != null &amp;&amp; prefabIndex &lt; gameMap.getAvailablePrefabs().size()) {</span>
+<span class="nc" id="L229">            selectedPrefabIndex = prefabIndex;</span>
+        } else {
+<span class="nc" id="L231">            selectedPrefabIndex = -1;</span>
+        }
+<span class="nc" id="L233">    }</span>
+
+    /**
+     * @return true if the player is allowed to place another building
+     */
+    public boolean canPlaceBuilding() {
+<span class="nc bnc" id="L239" title="All 4 branches missed.">        return !gameOver &amp;&amp; gameMap.getTotalBuildingCount() &lt; maximumAllowedBuildings;</span>
+    }
+
+    /**
+     * @return the selected prefab if there is one, otherwise null
+     */
+    public BuildingPrefab getSelectedPrefab() {
+<span class="nc bnc" id="L246" title="All 4 branches missed.">        if (gameMap == null || selectedPrefabIndex &lt; 0) {</span>
+<span class="nc" id="L247">            return null;</span>
+        }
+<span class="nc" id="L249">        return gameMap.getAvailablePrefabs().get(selectedPrefabIndex);</span>
+    }
+
+    public GameMap getGameMap() {
+<span class="nc" id="L253">        return gameMap;</span>
+    }
+
+    public int getSelectedPrefabIndex() {
+<span class="nc" id="L257">        return selectedPrefabIndex;</span>
+    }
+
+    public float getRemainingTime() {
+<span class="nc" id="L261">        return remainingTime;</span>
+    }
+
+    public float getNextBuildingTime() {
+<span class="nc" id="L265">        return nextBuildingTime;</span>
+    }
+
+    public float getSatisfaction() {
+<span class="nc" id="L269">        return satisfaction;</span>
+    }
+
+    public GameEvent getCurrentEvent() {
+<span class="nc" id="L273">        return currentEvent;</span>
+    }
+
+    public float getEventDurationTimer() {
+<span class="nc" id="L277">        return eventDurationTimer;</span>
+    }
+
+    public boolean setPaused(boolean paused) {
+<span class="nc" id="L281">        this.paused = paused;</span>
+<span class="nc bnc" id="L282" title="All 4 branches missed.">        if (!(started) &amp;&amp; !(paused)){</span>
+<span class="nc" id="L283">            started = true;</span>
+        }
+<span class="nc" id="L285">        return this.paused;</span>
+    }
+
+    public boolean getPaused() {
+<span class="nc" id="L289">        return this.paused;</span>
+    }
+
+    public void restart() {
+<span class="nc" id="L293">        screen.restart();</span>
+<span class="nc" id="L294">    }</span>
+
+    public boolean getGameOver() {
+<span class="nc" id="L297">        return gameOver;</span>
+    }
+
+    public void setAchievementController(AchievementController achievementController) {
+<span class="nc" id="L301">        this.achievementController = achievementController;</span>
+<span class="nc" id="L302">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

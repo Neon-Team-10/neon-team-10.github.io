@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UiStage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">UiStage.java</span></div><h1>UiStage.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.neonteam10.Achievements.AchievementController;
+import io.github.neonteam10.Achievements.ShowAchievement;
+import io.github.neonteam10.GameLogic;
+
+/**
+ * A class which holds all the UI elements.
+ */
+public class UiStage extends Stage {
+    private final UiAssets assets;
+    private final GameLogic gameLogic;
+    private final ShowAchievement showAchievement;
+    Table topLeftTable;
+    Table pauseTable;
+    Table topRightTable;
+    Stack buildingToolbar;
+    Table endGameTable;
+    Table achievementsTable;
+    PauseButton pauseButton;
+    private AchievementController achievementController;
+
+    public UiStage(AssetManager assetManager, GameLogic gameLogic) {
+        // The UI spans the whole screen.
+<span class="nc" id="L33">        super(new ScreenViewport());</span>
+<span class="nc" id="L34">        this.assets = new UiAssets(assetManager);</span>
+<span class="nc" id="L35">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L36">        showAchievement = new ShowAchievement(assets);</span>
+<span class="nc" id="L37">        showAchievement.setVisible(false);</span>
+        // Create a table to fill the whole screen.
+<span class="nc" id="L39">        Stack mainStack = new Stack();</span>
+<span class="nc" id="L40">        Table mainTable = new Table();</span>
+<span class="nc" id="L41">        mainStack.setFillParent(true);</span>
+<span class="nc" id="L42">        mainTable.setFillParent(true);</span>
+<span class="nc" id="L43">        addActor(mainStack);</span>
+
+
+        // Create a table anchored to the top left for the timer and stats.
+<span class="nc" id="L47">        topLeftTable = new Table();</span>
+<span class="nc" id="L48">        topLeftTable.add(new GameTimer(assets, gameLogic));</span>
+<span class="nc" id="L49">        topLeftTable.row();</span>
+<span class="nc" id="L50">        topLeftTable.add(new BuildingStatsBox(assets, gameLogic));</span>
+<span class="nc" id="L51">        topLeftTable.row();</span>
+<span class="nc" id="L52">        topLeftTable.add(new SatisfactionMeter(assets, gameLogic)).align(Align.left).padTop(16.0f);</span>
+<span class="nc" id="L53">        topLeftTable.row();</span>
+<span class="nc" id="L54">        topLeftTable.add(new CurrentEventBox(assets, gameLogic)).padTop(16.0f);</span>
+
+<span class="nc" id="L56">        pauseTable = new Table();</span>
+<span class="nc" id="L57">        pauseTable.add(new PlayTextButton(assets, gameLogic)).pad(15.0f);</span>
+<span class="nc" id="L58">        pauseTable.row();</span>
+<span class="nc" id="L59">        pauseTable.add(new RestartTextButton(assets, gameLogic)).pad(15.0f);</span>
+<span class="nc" id="L60">        pauseTable.row();</span>
+<span class="nc" id="L61">        pauseTable.add(new QuitTextButton(assets, gameLogic)).pad(15.0f);</span>
+
+<span class="nc" id="L63">        topRightTable = new Table();</span>
+<span class="nc" id="L64">        pauseButton = new PauseButton(assets, gameLogic, pauseTable);</span>
+<span class="nc" id="L65">        topRightTable.add(pauseButton);</span>
+
+<span class="nc" id="L67">        achievementsTable = new Table();</span>
+<span class="nc" id="L68">        achievementsTable.add(showAchievement);</span>
+
+        // Create the building toolbar anchored to the bottom center.
+<span class="nc" id="L71">        buildingToolbar = new BuildingToolbar(assets, gameLogic);</span>
+<span class="nc" id="L72">        mainTable.add(topLeftTable).expand().top().left().pad(25.0f);</span>
+<span class="nc" id="L73">        mainTable.add(topRightTable).expand().top().right().pad(25.0f);</span>
+<span class="nc" id="L74">        mainTable.row();</span>
+<span class="nc" id="L75">        mainTable.add(achievementsTable).bottom().center().padBottom(128.0f).colspan(3);</span>
+<span class="nc" id="L76">        mainTable.row().row();</span>
+<span class="nc" id="L77">        mainTable.add(buildingToolbar).bottom().center().padBottom(5.0f).colspan(3);</span>
+
+<span class="nc" id="L79">        mainStack.add(mainTable);</span>
+<span class="nc" id="L80">        mainStack.add(pauseTable);</span>
+
+<span class="nc" id="L82">        endGameTable = new EndGameUI(assets, gameLogic);</span>
+<span class="nc" id="L83">        mainStack.add(endGameTable);</span>
+<span class="nc" id="L84">    }</span>
+
+    public void setAchievementController(AchievementController controller) {
+<span class="nc" id="L87">        achievementController = controller;</span>
+<span class="nc" id="L88">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L92">        super.act(delta);</span>
+<span class="nc" id="L93">        assets.update();</span>
+<span class="nc" id="L94">    }</span>
+
+    public void update() {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (!gameLogic.getGameOver()) {</span>
+<span class="nc" id="L98">            endGameTable.setVisible(false);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (gameLogic.getPaused()) {</span>
+<span class="nc" id="L100">                pauseTable.setVisible(true);</span>
+<span class="nc" id="L101">                pauseButton.setChecked(true);</span>
+            }
+            else {
+<span class="nc" id="L104">                pauseTable.setVisible(false);</span>
+<span class="nc" id="L105">                pauseButton.setChecked(false);</span>
+            }
+        }
+        else {
+<span class="nc" id="L109">            topRightTable.setVisible(false);</span>
+<span class="nc" id="L110">            topLeftTable.setVisible(false);</span>
+<span class="nc" id="L111">            buildingToolbar.setVisible(false);</span>
+<span class="nc" id="L112">            pauseTable.setVisible(false);</span>
+<span class="nc" id="L113">            endGameTable.setVisible(true);</span>
+        }
+
+<span class="nc" id="L116">    }</span>
+
+    public void activateAchievement(String name, String description) {
+<span class="nc" id="L119">        showAchievement.clearChildren();</span>
+<span class="nc" id="L120">        showAchievement.add(new Label(&quot;Achievement Unlocked: &quot; + name , new Label.LabelStyle(assets.getLargeFont(), Color.BLACK))).align(Align.center).padBottom(10).row();</span>
+<span class="nc" id="L121">        showAchievement.add(new Label(description , new Label.LabelStyle(assets.getSmallFont(), Color.BLACK))).align(Align.center).padBottom(10).row();</span>
+<span class="nc" id="L122">        showAchievement.AchievementAppear();</span>
+<span class="nc" id="L123">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

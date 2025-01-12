@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuildingGraph.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.graphs</a> &gt; <span class="el_source">BuildingGraph.java</span></div><h1>BuildingGraph.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.graphs;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This graph is used to show the relationship between buildings (do they have a road connecting them?).
+ */
+public class BuildingGraph {
+<span class="fc" id="L11">    final float BEST_DISTANCE = 6f;</span>
+    List&lt;BuildingNode&gt; nodes;
+    float accommodationQualityScore;
+
+<span class="fc" id="L15">    public BuildingGraph() {</span>
+<span class="fc" id="L16">        nodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L17">    }</span>
+
+    public boolean addNode(BuildingNode node) {
+<span class="fc" id="L20">        return nodes.add(node);</span>
+    }
+
+
+    // Returns the accommodation quality score (some function of distance between accommodation and all other building types
+    public void calculateAccommodationQualityScore() {
+<span class="nc" id="L26">        float total = 0;</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">        for (BuildingNode node : nodes) {</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">            if (node.building.isAccommodation()) {</span>
+<span class="nc" id="L29">                int bestDistCanteen = Integer.MAX_VALUE;</span>
+<span class="nc" id="L30">                int bestDistRecreation = Integer.MAX_VALUE;</span>
+<span class="nc" id="L31">                int bestDistStudy = Integer.MAX_VALUE;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                for (BuildingNode neighbour : node.connections.keySet()) {</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">                    if (neighbour.building.isCanteen()){</span>
+<span class="nc" id="L34">                        bestDistCanteen = Math.min(bestDistCanteen, node.connections.get(neighbour));</span>
+                    }
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                    else if (neighbour.building.isRecreation()){</span>
+<span class="nc" id="L37">                        bestDistRecreation = Math.min(bestDistRecreation, node.connections.get(neighbour));</span>
+                    }
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                    else if (neighbour.building.isStudy()){</span>
+<span class="nc" id="L40">                        bestDistStudy = Math.min(bestDistStudy, node.connections.get(neighbour));</span>
+                    }
+<span class="nc" id="L42">                }</span>
+<span class="nc" id="L43">                total += (BEST_DISTANCE/bestDistCanteen + BEST_DISTANCE/bestDistRecreation + BEST_DISTANCE/bestDistStudy);</span>
+            }
+<span class="nc" id="L45">        }</span>
+<span class="nc" id="L46">        accommodationQualityScore = total;</span>
+<span class="nc" id="L47">    }</span>
+
+    /*
+     * Gives a flat score bonus based on how close the canteens are to other facilities.
+     * For every accommodation building within radius 5 from a canteen, you get a bonus of 0.5
+     * For every study building within radius 15 from a canteen, you get a bonus of 1
+     * While they may seem small, this is called every tic, and so quickly adds up
+     */
+    public float canteenBonus() {
+<span class="nc" id="L56">        float bonus = 0.0f;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        for (BuildingNode canteenNode : nodes) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (canteenNode.building.isCanteen()) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                for (BuildingNode neighbour : canteenNode.connections.keySet()) {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                    if (neighbour.building.isAccommodation()) {</span>
+<span class="nc" id="L61">                        int distanceToAccommodation = canteenNode.connections.get(neighbour);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                        if (Math.abs(distanceToAccommodation) &lt; 5){</span>
+<span class="nc" id="L63">                            bonus += 0.5;</span>
+                        }
+                    }
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                    if (neighbour.building.isStudy()) {</span>
+<span class="nc" id="L67">                        int distanceToStudy = canteenNode.connections.get(neighbour);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                        if (Math.abs(distanceToStudy) &lt; 15) {</span>
+<span class="nc" id="L69">                            bonus += 1;</span>
+                        }
+                    }
+<span class="nc" id="L72">                }</span>
+            }
+<span class="nc" id="L74">        }</span>
+<span class="nc" id="L75">        return bonus;</span>
+    }
+
+    /*
+     * Gives a flat score bonus based on how close the accommodation are to other facilities.
+     * For every accommodation building within radius 5 from a study building, you get a bonus of 5
+     * For every accommodation building within radius 15 from a recreation building, you get a bonus of 10
+     */
+    public float accommodationBonus() {
+<span class="nc" id="L84">        float bonus = 0.0f;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (BuildingNode accommNode : nodes) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (accommNode.building.isAccommodation()) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                for (BuildingNode neighbour : accommNode.connections.keySet()) {</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                    if (neighbour.building.isStudy()) {</span>
+<span class="nc" id="L89">                        int distanceToAccommodation = accommNode.connections.get(neighbour);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                        if (distanceToAccommodation &lt; 5) bonus += 5;</span>
+                    }
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                    if (neighbour.building.isRecreation()) {</span>
+<span class="nc" id="L93">                        int distanceToStudy = accommNode.connections.get(neighbour);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">                        if (distanceToStudy &lt; 15) bonus += 10;</span>
+                    }
+<span class="nc" id="L96">                }</span>
+            }
+<span class="nc" id="L98">        }</span>
+<span class="nc" id="L99">        return bonus;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L104">        String out = &quot;BuildingGraph: \n&quot;;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for (BuildingNode node : nodes) {</span>
+<span class="fc" id="L106">            out += node + &quot; : {&quot;;</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            for (BuildingNode node2 : node.connections.keySet()) {</span>
+<span class="fc" id="L108">                out += node2 + &quot;:&quot; + node.connections.get(node2) + &quot;, &quot;;</span>
+<span class="fc" id="L109">            }</span>
+<span class="fc" id="L110">            out += &quot;}\n&quot;;</span>
+<span class="fc" id="L111">        }</span>
+<span class="fc" id="L112">        return out;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

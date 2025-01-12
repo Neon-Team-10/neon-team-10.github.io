@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapGraph.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.graphs</a> &gt; <span class="el_source">MapGraph.java</span></div><h1>MapGraph.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.graphs;
+
+import io.github.neonteam10.map.Building;
+
+import java.util.*;
+
+/**
+ * This graph is purely for literal connections between map nodes (A building can only be connected to roads in this graph)
+ */
+public class MapGraph {
+<span class="nc" id="L11">    final float BUILDING_GAIN_VALUE = 1.0f;</span>
+    List&lt;MapNode&gt; nodes;
+    BuildingGraph buildingGraph;
+<span class="nc" id="L14">    public MapGraph() {</span>
+<span class="nc" id="L15">        nodes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L16">        buildingGraph = new BuildingGraph();</span>
+<span class="nc" id="L17">    }</span>
+
+    public void addBuilding(Building building) {
+<span class="nc" id="L20">        MapNode newNode = new MapNode(building);</span>
+<span class="nc" id="L21">        nodes.add(newNode);</span>
+<span class="nc" id="L22">        addAllNodeNeighbours(newNode);</span>
+        //System.out.println(newNode.getX() + &quot; &quot; + newNode.getY() + &quot;: &quot; + newNode.getNeighbours());
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        if (!building.getRoad()) {</span>
+<span class="nc" id="L25">            BuildingNode buildingNode = new BuildingNode(building);</span>
+<span class="nc" id="L26">            buildingGraph.addNode(buildingNode);</span>
+<span class="nc" id="L27">            newNode.addBuildingNode(buildingNode);</span>
+<span class="nc" id="L28">            recalculateBuildingGraphConnections();</span>
+        }
+<span class="nc" id="L30">    }</span>
+
+    public void addAllNodeNeighbours(MapNode node) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        for (MapNode n : nodes) {</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (connected(node, n)) {</span>
+                //System.out.println(node + &quot; connected to &quot; + n);
+<span class="nc" id="L36">                node.addNeighbour(n);</span>
+<span class="nc" id="L37">                n.addNeighbour(node);</span>
+
+            }
+<span class="nc" id="L40">        }</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Finds out whether two buildings, including roads are connected.
+     * @param node1 The node to find if node 2 is connected to
+     * @param node2 The node to find if connected to node 1
+     * @return A boolean representing whether the two nodes are connected.
+     */
+    private boolean connected(MapNode node1, MapNode node2) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (node1 == node2) {</span>
+<span class="nc" id="L51">            return false;</span>
+        }
+<span class="nc bnc" id="L53" title="All 4 branches missed.">        if (!(node1.isRoad() || node2.isRoad())) {</span>
+<span class="nc" id="L54">            return false;</span>
+        }
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        else if (node1.isRoad() &amp;&amp; node2.isRoad()) {</span>
+<span class="nc" id="L57">            int horizontalDiff = Math.abs(node1.getX() - node2.getX());</span>
+<span class="nc" id="L58">            int verticalDiff = Math.abs(node1.getY() - node2.getY());</span>
+<span class="nc bnc" id="L59" title="All 8 branches missed.">            return (horizontalDiff &lt;= 1 &amp;&amp; verticalDiff == 0) || (verticalDiff &lt;= 1 &amp;&amp; horizontalDiff == 0);</span>
+        }
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        else if (node1.isRoad()) {</span>
+<span class="nc bnc" id="L62" title="All 6 branches missed.">            return node2.getY() - 1 == node1.getY() &amp;&amp; node2.getX() &lt;= node1.getX() &amp;&amp; node2.getX() + node2.getWidth() &gt;= node1.getX();</span>
+        }
+        else {
+<span class="nc bnc" id="L65" title="All 6 branches missed.">            return node1.getY() - 1 == node2.getY() &amp;&amp; node1.getX() &lt;= node2.getX() &amp;&amp; node1.getX() + node1.getWidth() &gt;= node2.getX();</span>
+        }
+    }
+
+    public void recalculateBuildingGraphConnections() {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (MapNode startNode : nodes) {</span>
+<span class="nc" id="L71">            Map&lt;MapNode, Integer&gt; nodeConnections = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            for (MapNode node : nodes) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                if (node == startNode) {</span>
+<span class="nc" id="L74">                    nodeConnections.put(node, 0);</span>
+                }
+                else {
+<span class="nc" id="L77">                    nodeConnections.put(node, Integer.MAX_VALUE);</span>
+                }
+<span class="nc" id="L79">            }</span>
+<span class="nc" id="L80">            Set&lt;MapNode&gt; unvisited = new HashSet&lt;&gt;(nodes);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            while (!(unvisited.isEmpty())) {</span>
+<span class="nc" id="L82">                MapNode currentNode = null;</span>
+<span class="nc" id="L83">                int shortestDistance = Integer.MAX_VALUE;</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                for (MapNode node2 : unvisited) {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                    if (currentNode == null) {</span>
+<span class="nc" id="L86">                        shortestDistance = nodeConnections.get(node2);</span>
+<span class="nc" id="L87">                        currentNode = node2;</span>
+                    }
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                    if (nodeConnections.get(node2) &lt; shortestDistance) {</span>
+<span class="nc" id="L90">                        shortestDistance = nodeConnections.get(node2);</span>
+<span class="nc" id="L91">                        currentNode = node2;</span>
+                    }
+<span class="nc" id="L93">                }</span>
+<span class="nc" id="L94">                unvisited.remove(currentNode);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                for (MapNode node2 : currentNode.getNeighbours()) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                    if (unvisited.contains(node2)) {</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                        if (nodeConnections.get(currentNode) + 1 &lt; nodeConnections.get(node2)) {</span>
+<span class="nc" id="L98">                            nodeConnections.put(node2, nodeConnections.get(currentNode) + 1);</span>
+<span class="nc bnc" id="L99" title="All 4 branches missed.">                            if (startNode.buildingNode != null &amp;&amp; node2.buildingNode != null) {</span>
+<span class="nc" id="L100">                                startNode.buildingNode.connections.put(node2.buildingNode, nodeConnections.get(currentNode));</span>
+<span class="nc" id="L101">                                node2.buildingNode.connections.put(startNode.buildingNode, nodeConnections.get(currentNode));</span>
+                            }
+                        }
+                    }
+
+<span class="nc" id="L106">                }</span>
+<span class="nc" id="L107">            }</span>
+<span class="nc" id="L108">        }</span>
+
+
+<span class="nc" id="L111">    }</span>
+
+    public float getBonus(String buildingType) {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (buildingType == &quot;Canteen&quot;) {</span>
+<span class="nc" id="L115">            return buildingGraph.canteenBonus();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        } else if (buildingType == &quot;Accommodation&quot;) {</span>
+<span class="nc" id="L117">            return buildingGraph.accommodationBonus();</span>
+        } else {
+<span class="nc" id="L119">            return 0;</span>
+        }
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

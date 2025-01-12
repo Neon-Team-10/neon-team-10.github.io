@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SatisfactionMeter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">unisim</a> &gt; <a href="index.source.html" class="el_package">io.github.neonteam10.ui</a> &gt; <span class="el_source">SatisfactionMeter.java</span></div><h1>SatisfactionMeter.java</h1><pre class="source lang-java linenums">package io.github.neonteam10.ui;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
+import io.github.neonteam10.GameLogic;
+
+/**
+ * A class which represents the student satisfaction UI element.
+ */
+public class SatisfactionMeter extends Table {
+    private final UiAssets uiAssets;
+    private final GameLogic gameLogic;
+    private Image backgroundImage;
+    private Label satisfactionLabel;
+
+<span class="nc" id="L25">    public SatisfactionMeter(UiAssets uiAssets, GameLogic gameLogic) {</span>
+<span class="nc" id="L26">        this.uiAssets = uiAssets;</span>
+<span class="nc" id="L27">        this.gameLogic = gameLogic;</span>
+<span class="nc" id="L28">    }</span>
+
+    @Override
+    public void act(float delta) {
+<span class="nc" id="L32">        super.act(delta);</span>
+
+<span class="nc bnc" id="L34" title="All 4 branches missed.">        if (satisfactionLabel == null &amp;&amp; uiAssets.hasFontsLoaded()) {</span>
+<span class="nc" id="L35">            var labelStyle = new Label.LabelStyle(uiAssets.getLargeFont(), Color.BLACK);</span>
+<span class="nc" id="L36">            satisfactionLabel = new Label(&quot;000000&quot;, labelStyle);</span>
+<span class="nc" id="L37">            satisfactionLabel.setAlignment(Align.center);</span>
+        }
+
+        // Create background image once spritesheet has been loaded.
+<span class="nc bnc" id="L41" title="All 4 branches missed.">        if (backgroundImage == null &amp;&amp; uiAssets.hasSpritesheetLoaded()) {</span>
+<span class="nc" id="L42">            var textureRegion = new TextureRegion(uiAssets.getSpritesheet(), 290, 166, 62, 18);</span>
+<span class="nc" id="L43">            backgroundImage = new Image(textureRegion);</span>
+<span class="nc" id="L44">            add(backgroundImage).size(textureRegion.getRegionWidth() * GameTimer.IMAGE_SCALE,</span>
+<span class="nc" id="L45">                    textureRegion.getRegionHeight() * GameTimer.IMAGE_SCALE);</span>
+<span class="nc" id="L46">            row();</span>
+<span class="nc" id="L47">            add(satisfactionLabel).padTop(-48.0f * 1.25f);</span>
+        }
+
+
+
+<span class="nc" id="L52">    }</span>
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+<span class="nc" id="L56">        super.draw(batch, parentAlpha);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (satisfactionLabel != null) {</span>
+<span class="nc" id="L58">            satisfactionLabel.setText(String.format(&quot;%06d&quot;, ((int) (gameLogic.getSatisfaction()))));</span>
+        }
+<span class="nc" id="L60">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
